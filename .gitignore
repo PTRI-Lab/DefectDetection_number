@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.egg-info/
+
+# Virtual environment
+venv/
+.env/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Output files
+output/
+results/
+*.out
+
+# Videos and images (防止上傳影片、圖片)
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.gif
+
+# Static 資料夾內的檔案 (但保留資料夾)
+static/*
+!static/.gitkeep
