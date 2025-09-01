@@ -65,11 +65,11 @@ if best_approx is not None:
         cy = int(np.mean(pts[:,1]))
         standard_positions.append((cx, cy, pts))
 else:
-    print("❌ 標準答案未找到矩形")
+    print("❌ Step 1: Standard Answer Processing ---")
     exit()
 
 # --- Step 2: 影片處理 ---
-cap = cv2.VideoCapture(r".\static\mix.mp4")
+cap = cv2.VideoCapture(r".\static\wrong.mp4")
 if not cap.isOpened():
     print("❌ Cannot open video")
     exit()
@@ -105,20 +105,20 @@ while cap.isOpened():
             cy = int(np.mean(pts[:,1]))
             detected_positions.append((cx, cy, pts, confidence))
 
-        # --- Step 3: 比對位置 ---
+        # --- Step 3: Compare positions ---
         for std_cx, std_cy, std_pts in standard_positions:
             found_match = False
             for det_cx, det_cy, det_pts, det_conf in detected_positions:
                 dist = np.sqrt((std_cx - det_cx)**2 + (std_cy - det_cy)**2)
-                if dist < 50:  # 容忍誤差 (像素)
+                if dist < 50:  # Tolerance (pixels)
                     found_match = True
-                    # Warped 視窗
+                    # Warped window
                     cv2.polylines(warped, [det_pts], isClosed=True, color=(0,255,0), thickness=2)
                     cv2.putText(warped, f"correct ({det_conf:.2f})",
                                 (det_pts[0][0], det_pts[0][1]-10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
 
-                    # Frame 視窗（映射回原圖）
+                    # Frame window (map back to original image)
                     det_pts_h = cv2.perspectiveTransform(det_pts.reshape(-1,1,2).astype(np.float32), M_inv)
                     det_pts_h = det_pts_h.reshape(-1,2).astype(int)
                     cv2.polylines(frame, [det_pts_h], isClosed=True, color=(0,255,0), thickness=2)
@@ -127,18 +127,20 @@ while cap.isOpened():
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,255,0), 2)
                     break
 
+            # 🔹 Only draw red box if standard point is inside the main rectangle
             if not found_match:
-                # Warped 視窗
-                cv2.polylines(warped, [std_pts], isClosed=True, color=(0,0,255), thickness=2)
-                cv2.putText(warped, "error", (std_pts[0][0], std_pts[0][1]-10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
+                if cv2.pointPolygonTest(best_approx, (std_cx, std_cy), False) >= 0:
+                    # Warped window
+                    cv2.polylines(warped, [std_pts], isClosed=True, color=(0,0,255), thickness=2)
+                    cv2.putText(warped, "error", (std_pts[0][0], std_pts[0][1]-10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
 
-                # Frame 視窗（標準框轉回原圖）
-                std_pts_h = cv2.perspectiveTransform(std_pts.reshape(-1,1,2).astype(np.float32), M_inv)
-                std_pts_h = std_pts_h.reshape(-1,2).astype(int)
-                cv2.polylines(frame, [std_pts_h], isClosed=True, color=(0,0,255), thickness=2)
-                cv2.putText(frame, "error", (std_pts_h[0][0], std_pts_h[0][1]-10),
-                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
+                    # Frame window (map back to original image)
+                    std_pts_h = cv2.perspectiveTransform(std_pts.reshape(-1,1,2).astype(np.float32), M_inv)
+                    std_pts_h = std_pts_h.reshape(-1,2).astype(int)
+                    cv2.polylines(frame, [std_pts_h], isClosed=True, color=(0,0,255), thickness=2)
+                    cv2.putText(frame, "error", (std_pts_h[0][0], std_pts_h[0][1]-10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
 
         cv2.imshow("Warped + OCR Compare", warped)
         cv2.drawContours(frame, [best_approx], -1, (0,255,0), 3)
