@@ -29,7 +29,7 @@ def draw_rectangle(event, x, y, flags, param):
         print(f"Expected region set: {rect}")
 
 # Load image
-image_path = './2.jpg'
+image_path = './test.jpg'
 img = cv2.imread(image_path)
 clone = img.copy()
 cv2.namedWindow('Select Expected Region')

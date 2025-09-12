@@ -40,3 +40,10 @@ results/
 # Static 資料夾內的檔案 (但保留資料夾)
 static/*
 !static/.gitkeep
+
+# model
+*.json
+*.pdiparams
+*.yml
+*.tar
+*.pb

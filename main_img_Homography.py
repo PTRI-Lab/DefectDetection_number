@@ -232,8 +232,8 @@ def process_image(image_path):
                     print(f"    原始文字: '{text}', 信心度: {confidence:.3f}")
                     
                     if confidence > 0.2:  # 降低信心度閾值
-                        cleaned_text = clean_text(text)
-                        print(f"    清理後: '{cleaned_text}'")
+                        cleaned_text = text# clean_text(text)
+                        #print(f"    清理後: '{cleaned_text}'")
                         
                         if cleaned_text and len(cleaned_text) >= 4:  # 降低長度要求
                             if confidence > best_confidence:
@@ -324,7 +324,7 @@ def process_image(image_path):
     return all_results
 
 if __name__ == "__main__":
-    image_path = r'.\static\test.jpg'
+    image_path = r'.\static\standard.png'
     results = process_image(image_path)
     
     if results:
