@@ -1,97 +1,69 @@
-太好了 👍
-我幫你寫一份 **README.md**，包含：
 
-* **安裝方式**
-* **執行流程**
-* **操作流程**
+## 🧩 環境需求與安裝
 
----
-
-````markdown
-# OCR 影片比對系統
-
-這個專案使用 **OpenCV** + **EasyOCR** 來達成以下功能：
-
-- 從影片中偵測矩形紙張（如 A4 紙），並透視矯正。  
-- OCR 辨識紙張上的文字框位置。  
-- 與一張 **標準答案影像** 進行比對。  
-- 若影片中的文字位置對應標準答案 → **綠色框 + `correct (confidence)`**。  
-- 若缺少或偏差太大 → **紅色框 + `error`**。  
-- 同時顯示在 **Warped (矯正後)** 與 **Frame (原始影像)** 視窗。  
-
----
-
-## 📦 安裝
-
-請先安裝 Python 3.8+  
-
-### 建立虛擬環境 (建議)
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux / MacOS
-venv\Scripts\activate     # Windows
-````
-
-### 安裝依賴套件
+* **Python 版本**：`Python 3.10.11`
+* **必須套件**（可用 `pip` 安裝）：
 
 ```bash
-pip install -r requirements.txt
+pip install opencv-python numpy paddleocr
 ```
 
-`requirements.txt` 內容：
-
-```
-opencv-python
-numpy
-easyocr
-torch
-```
-
-（⚠️ **建議安裝 GPU 版 torch**，不然 EasyOCR 會跑比較慢）
+> 📌 安裝 `paddleocr` 時會自動安裝 `paddlepaddle`，如遇 GPU 版本需求，可參考 [PaddleOCR 官方安裝指南](https://www.paddleocr.ai/latest/installation/)
 
 ---
 
-## ▶️ 執行流程
+### ▶️ 執行方式
 
-1. 將標準答案圖片放在 `./static/standard.png`
-2. 將待測影片放在 `./static/mix.mp4`
-3. 執行程式：
+1. 將 `main_vedio_Fixedpoint_PaddleOCR.py` 放在專案根目錄
+2. 準備以下兩個檔案，並放在與程式同一層目錄：
 
-   ```bash
-   python main_vedio_Homography.py
-   ```
+   * `sample.mp4`：要分析的影片檔
+   * `reference.jpg`：作為比對用的參考影像
+3. 在終端機執行：
 
----
-
-## 🖥️ 操作流程
-
-* 程式會同時開兩個視窗：
-
-  * **Warped + OCR Compare**：顯示透視矯正後的紙張比對結果。
-  * **Frame**：顯示原始影片中的比對框與標示。
-
-* 標示規則：
-
-  * ✅ 綠色框：位置正確，顯示 `"correct (confidence)"`
-  * ❌ 紅色框：缺失或偏差太大，顯示 `"error"`
-
-* 操作說明：
-
-  * 按 `q` 鍵 → 結束程式
-  * 每一幀影像都會自動更新比對結果
-
----
-
-## 📂 專案結構
-
+```bash
+python main_vedio_Fixedpoint_PaddleOCR.py
 ```
-.
-├── static/
-│   ├── standard.png      # 標準答案圖片
-│   ├── mix.mp4           # 測試影片
-├── main_vedio_Homography.py
-├── requirements.txt
-└── README.md
+
+4. 執行後會：
+
+   * 讀取影片右半區域的矩形區塊
+   * 對 ROI 進行透視變換與 OCR
+   * 與參考影像中 OCR 文字與位置（IoU）比對
+   * 在畫面上顯示 OCR 結果與比對狀態，並於物件離開檢測區後輸出 JSON 結果於終端機
+
+---
+
+### 📁 所需資料檔案
+
+| 檔案名稱            | 說明               |
+| --------------- | ---------------- |
+| `sample.mp4`    | 待檢測的影片           |
+| `reference.jpg` | 參考基準影像（含矩形與標準文字） |
+
+---
+
+### 📦 PaddleOCR 模型下載
+
+此程式使用 **PP-OCRv5** 的輕量模型，可於 PaddleOCR 官網下載：
+
+* 官方模型清單與使用說明：
+  🔗 [PaddleOCR 官方說明](https://www.paddleocr.ai/latest/version3.x/pipeline_usage/OCR.html#1-ocr)
+
+* 需下載以下兩個模型，並放置於程式同目錄：
+
+  ```
+  ./PP-OCRv5_mobile_det
+  ./PP-OCRv5_mobile_rec
+  ```
+
+程式會透過以下參數載入：
+
+```python
+text_detection_model_name="PP-OCRv5_mobile_det",
+text_recognition_model_name="PP-OCRv5_mobile_rec",
+text_detection_model_dir="./PP-OCRv5_mobile_det",
+text_recognition_model_dir="./PP-OCRv5_mobile_rec",
 ```
 
 ---
