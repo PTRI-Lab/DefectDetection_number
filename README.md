@@ -1,5 +1,12 @@
 
-## 🧩 環境需求與安裝
+
+
+
+
+
+
+# 🧩 PaddleOCR環境需求與安裝
+## 此版本目前沒辦法用在Linux
 
 * **Python 版本**：`Python 3.10.11`
 * **必須套件**（可用 `pip` 安裝）：
@@ -12,7 +19,7 @@ pip install opencv-python numpy paddleocr
 
 ---
 
-### ▶️ 執行方式
+## ▶️ 執行方式
 
 1. 將 `main_vedio_Fixedpoint_PaddleOCR.py` 放在專案根目錄
 2. 準備以下兩個檔案，並放在與程式同一層目錄：
@@ -34,7 +41,7 @@ python main_vedio_Fixedpoint_PaddleOCR.py
 
 ---
 
-### 📁 所需資料檔案
+## 📁 所需資料檔案
 
 | 檔案名稱            | 說明               |
 | --------------- | ---------------- |
@@ -43,7 +50,7 @@ python main_vedio_Fixedpoint_PaddleOCR.py
 
 ---
 
-### 📦 PaddleOCR 模型下載
+## 📦 PaddleOCR 模型下載
 
 此程式使用 **PP-OCRv5** 的輕量模型，可於 PaddleOCR 官網下載：
 

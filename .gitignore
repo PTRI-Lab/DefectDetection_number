@@ -37,6 +37,12 @@ results/
 *.bmp
 *.gif
 
+# 例外：允許特定的參考檔案
+!reference.jpg
+!reference3.jpg
+!sample.mp4
+!sample3.mp4
+
 # Static 資料夾內的檔案 (但保留資料夾)
 static/*
 !static/.gitkeep
