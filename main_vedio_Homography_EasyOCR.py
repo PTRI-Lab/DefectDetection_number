@@ -12,10 +12,10 @@ from collections import Counter
 
 # Database configuration
 DATABASE_CONFIG = {
-    'server': '20.94.200.119',  # Replace with your actual IP
+    'server': 'xx.xx.xxx.xxx',  # Replace with your actual IP
     'database': 'OCR',
-    'username': 'ptridev',
-    'password': 'a78322626@',  # Replace with actual password
+    'username': '...',
+    'password': '...',  # Replace with actual password
     'driver': '{ODBC Driver 18 for SQL Server}'  # or '{SQL Server}' for older versions
 }
 
