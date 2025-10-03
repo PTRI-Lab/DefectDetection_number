@@ -12,11 +12,11 @@ from collections import Counter
 
 # Database configuration
 DATABASE_CONFIG = {
-    'server': '20.94.200.119',  # Replace with your actual IP
+    'server': '...',  # Replace with your actual IP
     'database': 'OCR',
     'username': 'ptridev',
-    'password': 'a78322626@',  # Replace with actual password
-    'driver': '{ODBC Driver 18 for SQL Server}'  # or '{SQL Server}' for older versions
+    'password': '...',  # Replace with actual password
+    'driver': '{ODBC Driver 17 for SQL Server}'  # or '{SQL Server}' for older versions 。linux: '{ODBC Driver 18 for SQL Server}'
 }
 
 def init_database():
@@ -62,8 +62,8 @@ def insert_to_database(conn, data):
         # Note: This assumes UV table has columns matching your JSON structure
         # You may need to adjust column names based on actual table schema
         insert_sql = """
-        INSERT INTO UV ( Value, Confidence, Status, Image_base64,Spacing )
-        VALUES (  ?, ?, ?, ?, ?)
+        INSERT INTO UV ( Value, Confidence, Status, Image_base64,Spacing,Filename )
+        VALUES (  ?, ?, ?, ?, ?, ?)
         """
         
         cursor.execute(insert_sql, (
@@ -71,7 +71,8 @@ def insert_to_database(conn, data):
             data['Confidence'],
             data['Status'],
             data['Image_base64'],
-            data['Spacing']
+            data['Spacing'],
+            data['Filename']
         ))
         
         conn.commit()
@@ -101,6 +102,7 @@ serial_number = 1
 out_of_area = True  # Initially assume not in detection area
 defect_margin = 30  # Boundary buffer
 last_roi_image = None  # Save last ROI image
+iou_value = 0.0  # define IOU
 OCR_INTERVAL = 1 # Perform OCR every N frames
 # Standard size
 STANDARD_WIDTH = 320 #400
@@ -202,6 +204,7 @@ def image_to_base64(image):
     try:
         # Encode image as JPEG format
         _, buffer = cv2.imencode('.jpg', image)
+        #_, buffer = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 70])  # 70% 品質
         # Convert to base64 string
         image_base64 = base64.b64encode(buffer).decode('utf-8')
         return image_base64
@@ -482,15 +485,14 @@ def load_reference_image(ref_path):
         return False
         
 # Load reference answer
-reference_image_path = r"./reference3.jpg"  # Please modify to your reference image path
+reference_image_path = r"./reference.jpg"  # Please modify to your reference image path
 reference_loaded = load_reference_image(reference_image_path)
 print(f"[INIT] Reference image loaded: {reference_loaded}")
 if reference_loaded:
     print(f"[INIT] Reference text: '{reference_text}'")
 
 # Video reading
-video_path = r"./sample3.mp4"
-cap = cv2.VideoCapture("sample3.mp4")
+cap = cv2.VideoCapture("sample.mp4")
 if not cap.isOpened():
     print("[ERROR] Cannot open video")
     exit()
@@ -622,7 +624,8 @@ while cap.isOpened():
             current_ocr_texts and 
             reference_warped_img is not None and 
             reference_text is not None):
-            
+        
+
             # Get first detected text for position check
             first_detected_text = list(current_ocr_texts.keys())[0]
             #print(f"[POS] First detected text '{first_detected_text}', performing position check...")
@@ -691,7 +694,11 @@ while cap.isOpened():
                 # Convert last ROI image to base64 (prioritize image saved during position check)
                 image_base64 = ""
                 roi_image_to_save = current_session_warped_img if current_session_warped_img is not None else last_roi_image
+                image_filename = ""
                 if roi_image_to_save is not None:
+                    #image_base64 = image_to_base64(frame)
+                    image_filename = f"{serial_number}.jpg"
+                    cv2.imwrite(r".\analysis\temp\{0}".format(image_filename), frame)
                     image_base64 = image_to_base64(roi_image_to_save)
 
                 result_json = {
@@ -701,17 +708,20 @@ while cap.isOpened():
                         "Status": str(position_status),                 #nvarchar(50)
                         "Image_base64": image_base64,                   #nvarchar(MAX) 
                         #"Timestamp": datetime.now().isoformat(),        #datetime
-                        "Spacing" :  f"{iou_value:.3f}"                 #nvarchar(50)
-                
+                        "Spacing" :  f"{iou_value:.3f}",                 #nvarchar(50)
+                        "Filename" : image_filename
                 }
-                print("[RESULT] JSON result:Value={0},Confidence={1},Status={2},Image_base64={3}...,Spacing={4}".format(
+                print("[RESULT] JSON result:Value={0},Confidence={1},Status={2},Image_base64={3}...,Spacing={4},Filename={5}".format(
                     result_json['Value'],
                     result_json['Confidence'],
                     result_json['Status'],
                     result_json['Image_base64'][:5],
-                    result_json['Spacing']) )
+                    result_json['Spacing'],
+                    result_json['Filename']
+                    ) )
 
                 # Insert to database
+                print(db_connection)
                 if db_connection:
                     insert_to_database(db_connection, result_json)
                 else:
